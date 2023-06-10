@@ -1,0 +1,61 @@
+version: '3.2'
+services:
+
+  #PHP Service
+  app:
+    build:
+      context: .
+      dockerfile: php-Dockerfile/Dockerfile
+    image: ancient-php-with-mysql
+    ports:
+      - "9000:9000"
+    # seems like fpm receives the full path from nginx
+    # and tries to find the files in this dock, so it must
+    # be the same as nginx.root
+    volumes:
+      - ../hram.codis.ru/docs:/var/www/html/hram.codis.ru:ro
+      - ./etc/php/php.ini:/usr/local/etc/php/php.ini:ro
+    container_name: app
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: app
+      SERVICE_TAGS: dev
+    networks:
+      - app-network
+
+  #Nginx Service
+  webserver:
+    image: nginx:alpine
+    volumes:
+      - ./etc/nginx/hram.conf:/etc/nginx/conf.d/hram.conf:ro
+      - ../hram.codis.ru/docs:/var/www/html/hram.codis.ru:ro
+    container_name: webserver
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "8080:80"
+    networks:
+      - app-network
+
+  #MySQL Service
+  db:
+    image: mysql:5.7
+    container_name: db
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3306:3306"
+    environment:
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+      MYSQL_RANDOM_ROOT_PASSWORD: 1
+    volumes:
+      - ../mysql-dump/hram.sql:/docker-entrypoint-initdb.d/dump.sql:ro
+    networks:
+      - app-network
+
+#Docker Networks
+networks:
+  app-network:
+    driver: bridge
