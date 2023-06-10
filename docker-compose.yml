@@ -8,7 +8,7 @@ services:
       dockerfile: php-Dockerfile/Dockerfile
     image: ancient-php-with-mysql
     ports:
-      - "9000:9000"
+      - "127.0.0.1:9000:9000"
     # seems like fpm receives the full path from nginx
     # and tries to find the files in this dock, so it must
     # be the same as nginx.root
@@ -34,7 +34,7 @@ services:
     restart: unless-stopped
     tty: true
     ports:
-      - "8080:80"
+      - "127.0.0.1:8080:80"
     networks:
       - app-network
 
@@ -45,7 +45,7 @@ services:
     restart: unless-stopped
     tty: true
     ports:
-      - "3306:3306"
+      - "127.0.0.1:3306:3306"
     environment:
       SERVICE_TAGS: dev
       SERVICE_NAME: mysql
