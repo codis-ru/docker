@@ -1,20 +1,17 @@
-version: '3.2'
+version: '3.9'
 services:
 
   #PHP Service
   app:
-    build:
-      context: .
-      dockerfile: php-Dockerfile/Dockerfile
-    image: ancient-php-with-mysql
+    image: ghcr.io/codis-ru/docker:latest
     ports:
       - "127.0.0.1:9000:9000"
     # seems like fpm receives the full path from nginx
     # and tries to find the files in this dock, so it must
     # be the same as nginx.root
     volumes:
-      - ../hram.codis.ru/docs:/var/www/html/hram.codis.ru:ro
-      - ./etc/php/php.ini:/usr/local/etc/php/php.ini:ro
+      - /web/hram.codis.ru/docs:/var/www/html/hram.codis.ru:ro
+      - /web/docker/etc/php/php.ini:/usr/local/etc/php/php.ini:ro
     container_name: app
     restart: unless-stopped
     tty: true
@@ -28,8 +25,8 @@ services:
   webserver:
     image: nginx:alpine
     volumes:
-      - ./etc/nginx/hram.conf:/etc/nginx/conf.d/hram.conf:ro
-      - ../hram.codis.ru/docs:/var/www/html/hram.codis.ru:ro
+      - /web/docker/etc/nginx/hram.conf:/etc/nginx/conf.d/hram.conf:ro
+      - /web/hram.codis.ru/docs:/var/www/html/hram.codis.ru:ro
     container_name: webserver
     restart: unless-stopped
     tty: true
@@ -51,7 +48,7 @@ services:
       SERVICE_NAME: mysql
       MYSQL_RANDOM_ROOT_PASSWORD: 1
     volumes:
-      - ../mysql-dump/hram.sql:/docker-entrypoint-initdb.d/dump.sql:ro
+      - /web/mysql-dump/hram.sql:/docker-entrypoint-initdb.d/dump.sql:ro
     networks:
       - app-network
 
